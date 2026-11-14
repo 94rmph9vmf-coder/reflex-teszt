@@ -1,0 +1,14 @@
+{
+  "name": "Reflexteszt",
+  "short_name": "Reflex",
+  "description": "Reflexvizsgáló profilokkal és Top 10 ranglistával",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1e293b",
+  "theme_color": "#1e293b",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

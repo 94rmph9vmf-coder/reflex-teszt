@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Reflexteszt</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Reflex">
+<meta name="theme-color" content="#1e293b">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+  :root {
+    --bg: #1e293b;
+    --bg-card: #273449;
+    --bg-input: #334155;
+    --border: #3d4d66;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --gold: #facc15;
+    --red: #dc2626;
+    --red-glow: rgba(220, 38, 38, .45);
+    --green: #22c55e;
+    --green-glow: rgba(34, 197, 94, .55);
+    --orange: #f97316;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 16px);
+    -webkit-user-select: none; user-select: none;
+    overscroll-behavior: none;
+  }
+  .wrap { max-width: 520px; margin: 0 auto; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0 10px; gap: 12px;
+  }
+  h1 { font-size: 20px; letter-spacing: .5px; }
+  h1 span { color: var(--gold); }
+  .profile-btn {
+    background: var(--bg-input); color: var(--text); border: 1px solid var(--border);
+    border-radius: 999px; padding: 8px 14px; font-size: 14px; font-weight: 600;
+    cursor: pointer; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .profile-btn::before { content: "👤 "; }
+
+  /* Játéktér */
+  .stage {
+    position: relative; height: min(62vh, 440px); min-height: 300px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    touch-action: none; cursor: pointer;
+  }
+  .circle {
+    width: min(64vw, 260px); aspect-ratio: 1; border-radius: 50%;
+    background: var(--red); box-shadow: 0 0 40px var(--red-glow);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 700; text-align: center; padding: 20px;
+    color: #fff;
+  }
+  .circle.idle { background: var(--bg-input); box-shadow: none; border: 3px dashed var(--border); color: var(--text-muted); }
+  .circle.go { background: var(--green); box-shadow: 0 0 60px var(--green-glow); }
+  .circle.early { background: var(--orange); box-shadow: 0 0 40px rgba(249,115,22,.45); }
+  .result { margin-top: 22px; text-align: center; min-height: 82px; }
+  .time { font-size: 48px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .time small { font-size: 22px; color: var(--text-muted); font-weight: 600; }
+  .msg { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
+  .msg.best { color: var(--gold); font-weight: 700; }
+
+  /* Statisztika */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 16px; }
+  .stat { background: var(--bg-card); border-radius: var(--radius); padding: 10px 6px; text-align: center; }
+  .stat b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 12px; color: var(--text-muted); }
+
+  /* Ranglista */
+  .card { background: var(--bg-card); border-radius: var(--radius); padding: 14px; margin-bottom: 16px; }
+  .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
+  .card-head h2 { font-size: 16px; }
+  .tabs { display: flex; background: var(--bg-input); border-radius: 999px; padding: 3px; }
+  .tabs button {
+    background: none; border: 0; color: var(--text-muted); font-size: 13px; font-weight: 600;
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  }
+  .tabs button.on { background: var(--gold); color: #1e293b; }
+  ol.board { list-style: none; }
+  ol.board li {
+    display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 8px;
+    padding: 8px 4px; border-bottom: 1px solid var(--border); font-size: 15px;
+  }
+  ol.board li:last-child { border-bottom: 0; }
+  ol.board li.me { color: var(--gold); }
+  .rank { font-weight: 800; color: var(--text-muted); text-align: center; }
+  li:nth-child(1) .rank { color: #fde047; }
+  li:nth-child(2) .rank { color: #cbd5e1; }
+  li:nth-child(3) .rank { color: #d97706; }
+  .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .who small { display: block; font-size: 11px; color: var(--text-muted); }
+  .ms { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .empty { color: var(--text-muted); font-size: 14px; text-align: center; padding: 14px 0; }
+
+  /* Profil panel */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none;
+    align-items: flex-end; justify-content: center; z-index: 10;
+  }
+  .overlay.open { display: flex; }
+  .sheet {
+    background: var(--bg-card); width: 100%; max-width: 520px; border-radius: 18px 18px 0 0;
+    padding: 18px 16px calc(env(safe-area-inset-bottom) + 18px); max-height: 85vh; overflow-y: auto;
+  }
+  .sheet h2 { font-size: 18px; margin-bottom: 12px; }
+  .plist { list-style: none; margin-bottom: 14px; }
+  .plist li {
+    display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 10px;
+    background: var(--bg-input); margin-bottom: 6px; cursor: pointer;
+  }
+  .plist li.active { outline: 2px solid var(--gold); }
+  .plist .pname { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plist .pbest { color: var(--text-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .icon-btn { background: none; border: 0; color: var(--text-muted); font-size: 18px; padding: 2px 6px; cursor: pointer; }
+  .row { display: flex; gap: 8px; }
+  input[type=text] {
+    flex: 1; min-width: 0; background: var(--bg-input); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 11px 12px; font-size: 16px; -webkit-user-select: text; user-select: text;
+  }
+  .btn {
+    background: var(--gold); color: #1e293b; border: 0; border-radius: 10px;
+    padding: 11px 16px; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .btn.ghost { background: var(--bg-input); color: var(--text); width: 100%; margin-top: 12px; }
+  .hint { font-size: 12px; color: var(--text-muted); margin-top: 10px; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>⚡ Reflex<span>teszt</span></h1>
+    <button class="profile-btn" id="profileBtn">Profil</button>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="circle idle" id="circle">Koppints az indításhoz</div>
+    <div class="result">
+      <div class="time" id="time">&nbsp;</div>
+      <div class="msg" id="msg">Várj, amíg a kör zöldre vált, aztán koppints rá!</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="sBest">–</b><span>Legjobb</span></div>
+    <div class="stat"><b id="sAvg">–</b><span>Átlag (utolsó 5)</span></div>
+    <div class="stat"><b id="sCount">0</b><span>Próbálkozás</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>🏆 Top 10</h2>
+      <div class="tabs">
+        <button data-tab="all" class="on">Mindenki</button>
+        <button data-tab="me">Saját</button>
+      </div>
+    </div>
+    <ol class="board" id="board"></ol>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <h2>Profilok</h2>
+    <ul class="plist" id="plist"></ul>
+    <div class="row">
+      <input type="text" id="newName" placeholder="Új profil neve" maxlength="24" autocomplete="off">
+      <button class="btn" id="addBtn">Hozzáad</button>
+    </div>
+    <p class="hint">Az eredmények ezen az eszközön, a böngészőben tárolódnak. A „Mindenki” ranglista az összes profil 10 leggyorsabb eredményét mutatja, a „Saját” csak a kiválasztott profilét.</p>
+    <button class="btn ghost" id="closeBtn">Bezár</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const KEY = 'villix-reflex-v1';
+  const MIN_DELAY = 1500, MAX_DELAY = 4500;   // véletlen várakozás (ms)
+  const MIN_VALID = 80;                        // ennél gyorsabb = biztosan előre koppintott
+
+  // ---------- Tárolás ----------
+  let db = load();
+  function load() {
+    try {
+      const d = JSON.parse(localStorage.getItem(KEY));
+      if (d && Array.isArray(d.profiles) && Array.isArray(d.results)) return d;
+    } catch (e) {}
+    return { profiles: [], results: [], current: null };
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {}
+  }
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const profile = id => db.profiles.find(p => p.id === id);
+  function ensureProfile() {
+    if (!db.profiles.length) {
+      db.profiles.push({ id: uid(), name: 'Játékos 1' });
+    }
+    if (!profile(db.current)) db.current = db.profiles[0].id;
+    save();
+  }
+  ensureProfile();
+
+  // ---------- Formázás ----------
+  // századmásodperc: 0,27 s
+  const fmt = ms => (Math.round(ms / 10) / 100).toFixed(2).replace('.', ',');
+  const fmtDate = t => new Date(t).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' });
+  const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // ---------- Játék ----------
+  const $ = id => document.getElementById(id);
+  const stage = $('stage'), circle = $('circle'), timeEl = $('time'), msgEl = $('msg');
+  let state = 'idle';   // idle | wait | go | done | early
+  let timer = null, startT = 0;
+
+  function setCircle(cls, text) {
+    circle.className = 'circle ' + cls;
+    circle.textContent = text;
+  }
+
+  function startRound() {
+    state = 'wait';
+    setCircle('', 'Várj…');
+    timeEl.innerHTML = '&nbsp;';
+    msgEl.className = 'msg';
+    msgEl.textContent = 'Koppints, amint zöld lesz!';
+    const delay = MIN_DELAY + Math.random() * (MAX_DELAY - MIN_DELAY);
+    timer = setTimeout(() => {
+      // a színváltás és az időmérés ugyanabban a képkockában
+      requestAnimationFrame(() => {
+        if (state !== 'wait') return;
+        setCircle('go', 'MOST!');
+        startT = performance.now();
+        state = 'go';
+      });
+    }, delay);
+  }
+
+  function finish(t) {
+    const ms = t - startT;
+    if (ms < MIN_VALID) return falseStart();
+    state = 'done';
+    const prevBest = myResults()[0];
+    db.results.push({ pid: db.current, ms: Math.round(ms), t: Date.now() });
+    save();
+    setCircle('', 'Újra');
+    timeEl.innerHTML = fmt(ms) + ' <small>s</small>';
+    if (!prevBest || Math.round(ms / 10) < Math.round(prevBest.ms / 10)) {
+      msgEl.className = 'msg best';
+      msgEl.textContent = '🎉 Új egyéni csúcs!';
+    } else {
+      msgEl.className = 'msg';
+      msgEl.textContent = rate(ms) + ' · Koppints az újrakezdéshez';
+    }
+    render();
+  }
+
+  function falseStart() {
+    clearTimeout(timer);
+    state = 'early';
+    setCircle('early', 'Túl korán!');
+    timeEl.innerHTML = '&nbsp;';
+    msgEl.className = 'msg';
+    msgEl.textContent = 'Megvárd a zöldet! Koppints az újrakezdéshez.';
+  }
+
+  function rate(ms) {
+    if (ms < 200) return 'Villámgyors ⚡';
+    if (ms < 250) return 'Kiváló';
+    if (ms < 300) return 'Jó';
+    if (ms < 400) return 'Átlagos';
+    return 'Lehet még gyorsabb';
+  }
+
+  // pointerdown: a leggyorsabb esemény, nincs késleltetés mint a click-nél
+  stage.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    const t = performance.now();
+    if (state === 'go') finish(t);
+    else if (state === 'wait') falseStart();
+    else startRound();
+  });
+
+  // ---------- Statisztika & ranglista ----------
+  const myResults = () => db.results.filter(r => r.pid === db.current).sort((a, b) => a.ms - b.ms);
+  let tab = 'all';
+
+  function render() {
+    const p = profile(db.current);
+    $('profileBtn').textContent = p.name;
+
+    const mine = db.results.filter(r => r.pid === db.current);
+    const last5 = mine.slice(-5);
+    $('sBest').textContent = mine.length ? fmt(Math.min(...mine.map(r => r.ms))) + ' s' : '–';
+    $('sAvg').textContent = last5.length ? fmt(last5.reduce((s, r) => s + r.ms, 0) / last5.length) + ' s' : '–';
+    $('sCount').textContent = mine.length;
+
+    const list = (tab === 'me' ? myResults() : [...db.results].sort((a, b) => a.ms - b.ms)).slice(0, 10);
+    const board = $('board');
+    if (!list.length) {
+      board.innerHTML = '<div class="empty">Még nincs eredmény.</div>';
+      return;
+    }
+    board.innerHTML = list.map((r, i) => {
+      const pr = profile(r.pid);
+      return `<li class="${r.pid === db.current && tab === 'all' ? 'me' : ''}">
+        <span class="rank">${i + 1}.</span>
+        <span class="who">${esc(pr ? pr.name : '?')}<small>${fmtDate(r.t)}</small></span>
+        <span class="ms">${fmt(r.ms)} s</span>
+      </li>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+    tab = b.dataset.tab;
+    document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+    render();
+  }));
+
+  // ---------- Profilkezelés ----------
+  const overlay = $('overlay');
+  function renderProfiles() {
+    $('plist').innerHTML = db.profiles.map(p => {
+      const rs = db.results.filter(r => r.pid === p.id);
+      const best = rs.length ? fmt(Math.min(...rs.map(r => r.ms))) + ' s' : '–';
+      return `<li data-id="${p.id}" class="${p.id === db.current ? 'active' : ''}">
+        <span class="pname">${esc(p.name)}</span>
+        <span class="pbest">${best} · ${rs.length} db</span>
+        <button class="icon-btn" data-act="rename" title="Átnevezés">✏️</button>
+        <button class="icon-btn" data-act="del" title="Törlés">🗑️</button>
+      </li>`;
+    }).join('');
+  }
+  function resetGame() {
+    clearTimeout(timer);
+    state = 'idle';
+    setCircle('idle', 'Koppints az indításhoz');
+    timeEl.innerHTML = '&nbsp;';
+    msgEl.className = 'msg';
+    msgEl.textContent = 'Várj, amíg a kör zöldre vált, aztán koppints rá!';
+  }
+
+  $('profileBtn').addEventListener('click', () => {
+    resetGame(); renderProfiles(); overlay.classList.add('open');
+  });
+  $('closeBtn').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+  $('plist').addEventListener('click', e => {
+    const li = e.target.closest('li'); if (!li) return;
+    const id = li.dataset.id, act = e.target.dataset.act, p = profile(id);
+    if (act === 'rename') {
+      const n = prompt('Új név:', p.name);
+      if (n && n.trim()) { p.name = n.trim().slice(0, 24); save(); }
+    } else if (act === 'del') {
+      if (!confirm(`Törlöd „${p.name}” profilt és minden eredményét?`)) return;
+      db.profiles = db.profiles.filter(x => x.id !== id);
+      db.results = db.results.filter(r => r.pid !== id);
+      ensureProfile();
+    } else {
+      db.current = id; save();
+      overlay.classList.remove('open');
+    }
+    renderProfiles(); render();
+  });
+
+  function addProfile() {
+    const inp = $('newName'), n = inp.value.trim().slice(0, 24);
+    if (!n) return inp.focus();
+    if (db.profiles.some(p => p.name.toLowerCase() === n.toLowerCase())) {
+      alert('Ilyen nevű profil már van.'); return;
+    }
+    const p = { id: uid(), name: n };
+    db.profiles.push(p); db.current = p.id; save();
+    inp.value = '';
+    renderProfiles(); render();
+    overlay.classList.remove('open');
+  }
+  $('addBtn').addEventListener('click', addProfile);
+  $('newName').addEventListener('keydown', e => { if (e.key === 'Enter') addProfile(); });
+
+  render();
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+</body>
+</html>
