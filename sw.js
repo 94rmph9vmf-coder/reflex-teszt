@@ -1,4 +1,4 @@
-const CACHE = 'reflex-v1';
+const CACHE = 'reflex-v2';
 const FILES = ['./', './index.html', './manifest.json', './icon.png'];
 
 self.addEventListener('install', e => {

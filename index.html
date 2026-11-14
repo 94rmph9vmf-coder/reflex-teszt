@@ -6,25 +6,26 @@
 <title>Reflexteszt</title>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Reflex">
-<meta name="theme-color" content="#1e293b">
+<meta name="theme-color" content="#dff3ff">
 <link rel="apple-touch-icon" href="icon.png">
 <style>
   :root {
-    --bg: #1e293b;
-    --bg-card: #273449;
-    --bg-input: #334155;
-    --border: #3d4d66;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --gold: #facc15;
-    --red: #dc2626;
-    --red-glow: rgba(220, 38, 38, .45);
-    --green: #22c55e;
-    --green-glow: rgba(34, 197, 94, .55);
-    --orange: #f97316;
-    --radius: 12px;
+    --bg: #dff3ff;
+    --bg-card: #ffffff;
+    --bg-input: #eaf6ff;
+    --border: #bfe3fa;
+    --text: #1f3a5f;
+    --text-muted: #6b86a6;
+    --gold: #ffc933;
+    --accent: #e0457b;
+    --red: #ff4d5e;
+    --red-glow: rgba(255, 77, 94, .4);
+    --green: #2fd36b;
+    --green-glow: rgba(47, 211, 107, .5);
+    --orange: #ff9f1c;
+    --radius: 14px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -42,7 +43,7 @@
     padding: 14px 0 10px; gap: 12px;
   }
   h1 { font-size: 20px; letter-spacing: .5px; }
-  h1 span { color: var(--gold); }
+  h1 span { color: var(--accent); }
   .profile-btn {
     background: var(--bg-input); color: var(--text); border: 1px solid var(--border);
     border-radius: 999px; padding: 8px 14px; font-size: 14px; font-weight: 600;
@@ -63,23 +64,23 @@
     font-size: 17px; font-weight: 700; text-align: center; padding: 20px;
     color: #fff;
   }
-  .circle.idle { background: var(--bg-input); box-shadow: none; border: 3px dashed var(--border); color: var(--text-muted); }
+  .circle.idle { background: #ffffff; box-shadow: 0 6px 24px rgba(31,58,95,.12); border: 4px dashed #7cc8f5; color: var(--text); }
   .circle.go { background: var(--green); box-shadow: 0 0 60px var(--green-glow); }
-  .circle.early { background: var(--orange); box-shadow: 0 0 40px rgba(249,115,22,.45); }
+  .circle.early { background: var(--orange); box-shadow: 0 0 40px rgba(255,159,28,.5); }
   .result { margin-top: 22px; text-align: center; min-height: 82px; }
-  .time { font-size: 48px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .time { color: var(--text); font-size: 48px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .time small { font-size: 22px; color: var(--text-muted); font-weight: 600; }
   .msg { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
-  .msg.best { color: var(--gold); font-weight: 700; }
+  .msg.best { color: var(--accent); font-weight: 700; }
 
   /* Statisztika */
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 16px; }
-  .stat { background: var(--bg-card); border-radius: var(--radius); padding: 10px 6px; text-align: center; }
+  .stat { background: var(--bg-card); box-shadow: 0 2px 8px rgba(31,58,95,.08); border-radius: var(--radius); padding: 10px 6px; text-align: center; }
   .stat b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; }
   .stat span { font-size: 12px; color: var(--text-muted); }
 
   /* Ranglista */
-  .card { background: var(--bg-card); border-radius: var(--radius); padding: 14px; margin-bottom: 16px; }
+  .card { background: var(--bg-card); box-shadow: 0 2px 10px rgba(31,58,95,.1); border-radius: var(--radius); padding: 14px; margin-bottom: 16px; }
   .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
   .card-head h2 { font-size: 16px; }
   .tabs { display: flex; background: var(--bg-input); border-radius: 999px; padding: 3px; }
@@ -87,17 +88,17 @@
     background: none; border: 0; color: var(--text-muted); font-size: 13px; font-weight: 600;
     padding: 6px 12px; border-radius: 999px; cursor: pointer;
   }
-  .tabs button.on { background: var(--gold); color: #1e293b; }
+  .tabs button.on { background: var(--gold); color: #4a2f00; }
   ol.board { list-style: none; }
   ol.board li {
     display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 8px;
     padding: 8px 4px; border-bottom: 1px solid var(--border); font-size: 15px;
   }
   ol.board li:last-child { border-bottom: 0; }
-  ol.board li.me { color: var(--gold); }
+  ol.board li.me { color: var(--accent); }
   .rank { font-weight: 800; color: var(--text-muted); text-align: center; }
-  li:nth-child(1) .rank { color: #fde047; }
-  li:nth-child(2) .rank { color: #cbd5e1; }
+  li:nth-child(1) .rank { color: #f5a800; }
+  li:nth-child(2) .rank { color: #8fa3b8; }
   li:nth-child(3) .rank { color: #d97706; }
   .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .who small { display: block; font-size: 11px; color: var(--text-muted); }
@@ -106,7 +107,7 @@
 
   /* Profil panel */
   .overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none;
+    position: fixed; inset: 0; background: rgba(31,58,95,.45); display: none;
     align-items: flex-end; justify-content: center; z-index: 10;
   }
   .overlay.open { display: flex; }
@@ -130,7 +131,7 @@
     border-radius: 10px; padding: 11px 12px; font-size: 16px; -webkit-user-select: text; user-select: text;
   }
   .btn {
-    background: var(--gold); color: #1e293b; border: 0; border-radius: 10px;
+    background: var(--gold); color: #4a2f00; border: 0; border-radius: 10px;
     padding: 11px 16px; font-size: 15px; font-weight: 700; cursor: pointer;
   }
   .btn.ghost { background: var(--bg-input); color: var(--text); width: 100%; margin-top: 12px; }
